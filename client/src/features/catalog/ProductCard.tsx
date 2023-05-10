@@ -1,5 +1,5 @@
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
 import ReadMoreIcon from "@mui/icons-material/ReadMore";
+import { LoadingButton } from "@mui/lab";
 import {
   Avatar,
   Button,
@@ -10,13 +10,26 @@ import {
   CardMedia,
   Typography,
 } from "@mui/material";
+import { useState } from "react";
 import { Link } from "react-router-dom";
+import agent from "../../app/api/agent";
+import { useStoreContext } from "../../app/context/StoreContext";
 import { Product } from "../../app/models/product";
+import { currencyFormat } from "../../app/utils/utils";
 
 interface Props {
   product: Product;
 }
 const ProductCard = ({ product }: Props) => {
+  const [loading, setLoading] = useState(false);
+  const { setCart } = useStoreContext();
+  function handleAddItem(productId: number) {
+    setLoading(true);
+    agent.Cart.addItem(productId)
+      .then((cart) => setCart(cart))
+      .catch((error) => console.log(error.message))
+      .finally(() => setLoading(false));
+  }
   return (
     <Card>
       <CardHeader
@@ -37,16 +50,20 @@ const ProductCard = ({ product }: Props) => {
       />
       <CardContent>
         <Typography gutterBottom color="secundary" variant="h5">
-          ${(product.price / 100).toFixed(2)}
+          {currencyFormat(product.price)}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {product.brand}/{product.type}
         </Typography>
       </CardContent>
       <CardActions>
-        <Button size="small">
-          <AddShoppingCartIcon />
-        </Button>
+        <LoadingButton
+          loading={loading}
+          onClick={() => handleAddItem(product.id)}
+          size="small"
+        >
+          Add to Cart
+        </LoadingButton>
         <Link to={`/catalog/${product.id}`}>
           <Button size="small">
             <ReadMoreIcon />

@@ -4,7 +4,8 @@ import AppBar from "@mui/material/AppBar";
 import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { NavLink } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
+import { useStoreContext } from "../context/StoreContext";
 
 interface Props {
   darkMode: boolean;
@@ -31,6 +32,9 @@ const navStyles = {
   },
 };
 const Header = ({ darkMode, handleDarkMode }: Props) => {
+  const { cart } = useStoreContext();
+
+  const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0);
   return (
     <Box sx={{ flexGrow: 1 }}>
       <AppBar position="static" sx={{ mb: 4 }}>
@@ -68,16 +72,18 @@ const Header = ({ darkMode, handleDarkMode }: Props) => {
               aligItems: "center",
             }}
           >
-            <IconButton
-              size="large"
-              edge="start"
-              color="inherit"
-              sx={{ mr: 2 }}
-            >
-              <Badge badgeContent="4" color="secondary">
-                <ShoppingCartTwoToneIcon />
-              </Badge>
-            </IconButton>
+            <Link to={"/cart"}>
+              <IconButton
+                size="large"
+                edge="start"
+                color="inherit"
+                sx={{ mr: 2 }}
+              >
+                <Badge badgeContent={itemCount} color="secondary">
+                  <ShoppingCartTwoToneIcon />
+                </Badge>
+              </IconButton>
+            </Link>
             <List sx={{ display: "flex" }}>
               {rightLinks.map(({ title, path }) => (
                 <ListItem

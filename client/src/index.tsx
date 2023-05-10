@@ -5,6 +5,7 @@ import "@fontsource/poppins/700.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { RouterProvider } from "react-router-dom";
+import { StoreProvider } from "./app/context/StoreContext";
 import "./app/layout/styles.css";
 import { router } from "./app/router/Routes";
 import reportWebVitals from "./reportWebVitals";
@@ -14,7 +15,9 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <StoreProvider>
+      <RouterProvider router={router} />
+    </StoreProvider>
   </React.StrictMode>
 );
 
