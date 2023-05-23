@@ -10,26 +10,31 @@ import {
   CardMedia,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import agent from "../../app/api/agent";
-import { useStoreContext } from "../../app/context/StoreContext";
 import { Product } from "../../app/models/product";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import { currencyFormat } from "../../app/utils/utils";
+import { addCartItemAsync } from "../cart/cartSlice";
 
 interface Props {
   product: Product;
 }
 const ProductCard = ({ product }: Props) => {
-  const [loading, setLoading] = useState(false);
-  const { setCart } = useStoreContext();
+  //const [loading, setLoading] = useState(false); After creating AsyncThunk,
+  //we can remove this, instead, get the status from useAppSelector
+  /*   const { setCart } = useStoreContext(); */
+  const { status } = useAppSelector((state) => state.cart);
+  const dispatch = useAppDispatch(); // We still need dispatch.
+
+  /* After creating AsyncThunk, we don't need this function anymore
   function handleAddItem(productId: number) {
     setLoading(true);
     agent.Cart.addItem(productId)
-      .then((cart) => setCart(cart))
+      .then((cart) => dispatch(setCart(cart))) //When we add a product using our product card, we update the satete in redux.
       .catch((error) => console.log(error.message))
       .finally(() => setLoading(false));
-  }
+  } */
+
   return (
     <Card>
       <CardHeader
@@ -58,8 +63,8 @@ const ProductCard = ({ product }: Props) => {
       </CardContent>
       <CardActions>
         <LoadingButton
-          loading={loading}
-          onClick={() => handleAddItem(product.id)}
+          loading={status.includes("pendingAddItem" + product.id)} //This way, we got just the specific loading button displayed
+          onClick={() => dispatch(addCartItemAsync({ productId: product.id }))} //Just productId because quantity is optional and we set to 1, take a llok in the browser and add to cart from /catalog, all loading indicators
           size="small"
         >
           Add to Cart

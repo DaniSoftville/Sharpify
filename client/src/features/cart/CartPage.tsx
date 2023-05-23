@@ -18,34 +18,15 @@ import AddCircleTwoToneIcon from "@mui/icons-material/AddCircleTwoTone";
 import DeleteTwoToneIcon from "@mui/icons-material/DeleteTwoTone";
 
 import { RemoveCircleOutline } from "@mui/icons-material";
-import { useState } from "react";
 import { Link } from "react-router-dom";
-import agent from "../../app/api/agent";
-import { useStoreContext } from "../../app/context/StoreContext";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
 import CartSummary from "./CartSummary";
-
+import { addCartItemAsync, removeCartItemAsync } from "./cartSlice";
 const CartPage = () => {
-  const { cart, setCart, removeItem } = useStoreContext();
-  const [status, setStatus] = useState({
-    loading: false,
-    name: "",
-  });
+  //const { cart, setCart, removeItem } = useStoreContext();
+  const { cart, status } = useAppSelector((state) => state.cart);
+  const dispatch = useAppDispatch();
 
-  const handleAddItem = (productId: number, name: string) => {
-    setStatus({ loading: true, name });
-    agent.Cart.addItem(productId)
-      .then((cart) => setCart(cart))
-      .catch((error) => console.log(error.message))
-      .finally(() => setStatus({ loading: false, name: "" }));
-  };
-
-  const handleRemoveItem = (productId: number, quantity = 1, name: string) => {
-    setStatus({ loading: true, name });
-    agent.Cart.removeItem(productId, quantity)
-      .then(() => removeItem(productId, quantity))
-      .catch((error) => console.log(error.message))
-      .finally(() => setStatus({ loading: false, name: "" }));
-  };
   if (!cart) return <Typography variant="h3">Your Cart is empty.</Typography>;
 
   return (
@@ -84,19 +65,27 @@ const CartPage = () => {
                   <LoadingButton
                     color="error"
                     loading={
-                      status.loading && status.name === "rem" + item.productId
+                      status === "pendingRemoveItem" + item.productId + "rem"
                     }
-                    onClick={() => handleRemoveItem(item.productId, 1, "rem")}
+                    onClick={() =>
+                      dispatch(
+                        removeCartItemAsync({
+                          productId: item.productId,
+                          quantity: 1,
+                          name: "rem",
+                        })
+                      )
+                    }
                   >
                     <RemoveCircleOutline />
                   </LoadingButton>
                   {item.quantity}
                   <LoadingButton
                     color="success"
-                    loading={
-                      status.loading && status.name === "add" + item.productId
+                    loading={status === "pendingAddItem" + item.productId}
+                    onClick={() =>
+                      dispatch(addCartItemAsync({ productId: item.productId }))
                     }
-                    onClick={() => handleAddItem(item.productId, "add")}
                   >
                     <AddCircleTwoToneIcon />
                   </LoadingButton>
@@ -107,11 +96,15 @@ const CartPage = () => {
                 <TableCell align="right">
                   <LoadingButton
                     color="error"
-                    loading={
-                      status.loading && status.name === "del" + item.productId
-                    }
+                    loading={status === "pending" + item.productId + "del"}
                     onClick={() =>
-                      handleRemoveItem(item.productId, item.quantity, "del")
+                      dispatch(
+                        removeCartItemAsync({
+                          productId: item.productId,
+                          quantity: item.quantity,
+                          name: "del",
+                        })
+                      )
                     }
                   >
                     <DeleteTwoToneIcon />

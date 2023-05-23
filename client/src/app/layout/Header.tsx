@@ -5,7 +5,7 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { Link, NavLink } from "react-router-dom";
-import { useStoreContext } from "../context/StoreContext";
+import { useAppSelector } from "../store/configureStore";
 
 interface Props {
   darkMode: boolean;
@@ -32,7 +32,8 @@ const navStyles = {
   },
 };
 const Header = ({ darkMode, handleDarkMode }: Props) => {
-  const { cart } = useStoreContext();
+  /*  const { cart } = useStoreContext(); */
+  const { cart } = useAppSelector((state) => state.cart);
 
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0);
   return (
