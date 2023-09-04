@@ -6,6 +6,7 @@ import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import { Link, NavLink } from "react-router-dom";
 import { useAppSelector } from "../store/configureStore";
+import { SignedInMenu } from "./SignedInMenu";
 
 interface Props {
   darkMode: boolean;
@@ -34,7 +35,7 @@ const navStyles = {
 const Header = ({ darkMode, handleDarkMode }: Props) => {
   /*  const { cart } = useStoreContext(); */
   const { cart } = useAppSelector((state) => state.cart);
-
+  const { user } = useAppSelector((state) => state.account);
   const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0);
   return (
     <Box sx={{ flexGrow: 1 }}>
@@ -85,18 +86,22 @@ const Header = ({ darkMode, handleDarkMode }: Props) => {
                 </Badge>
               </IconButton>
             </Link>
-            <List sx={{ display: "flex" }}>
-              {rightLinks.map(({ title, path }) => (
-                <ListItem
-                  component={NavLink}
-                  to={path}
-                  key={path}
-                  sx={navStyles}
-                >
-                  {title.toUpperCase()}
-                </ListItem>
-              ))}
-            </List>
+            {user ? (
+              <SignedInMenu />
+            ) : (
+              <List sx={{ display: "flex" }}>
+                {rightLinks.map(({ title, path }) => (
+                  <ListItem
+                    component={NavLink}
+                    to={path}
+                    key={path}
+                    sx={navStyles}
+                  >
+                    {title.toUpperCase()}
+                  </ListItem>
+                ))}
+              </List>
+            )}
           </Box>
         </Toolbar>
       </AppBar>

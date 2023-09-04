@@ -1,6 +1,7 @@
-import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { createAsyncThunk, createSlice, isAnyOf } from "@reduxjs/toolkit";
 import agent from "../../app/api/agent";
 import { Cart } from "../../app/models/Cart";
+import { getCookie } from "../../app/utils/utils";
 
 /*1.First, we need and interface for our CartState, 
 inside we can have our cart type Cart or null */
@@ -21,6 +22,22 @@ const initialState: CartState = {
 to do something inside of our store. Set status: 'idle' to pending 
 as soon as we start to go and get our cart items, 
 then send it back to idle once it's fulfilled  or rejected. Do it by adding extrareducers below. */
+
+export const fetchCartAsync = createAsyncThunk<Cart>(
+  "cart/fetchCartAsync",
+  async (_, thunkAPI) => {
+    try {
+      return await agent.Cart.get();
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue({ error: error.data });
+    }
+  },
+  {
+    condition: () => {
+      if (!getCookie("buyerId")) return false;
+    },
+  }
+);
 
 export const addCartItemAsync = createAsyncThunk<
   Cart,
@@ -60,11 +77,13 @@ export const cartSlice = createSlice({
   initialState,
   reducers: {
     setCart: (state, action) => {
-      state.cart =
-        action.payload; /* We need a setCart reducer that's gonna take the original state 
-                           plus an action */
+      state.cart = action.payload;
+    },
+    clearCart: (state) => {
+      state.cart = null;
     },
   },
+
   /*5. Extrareducers,createAsyncThunk is gonna create action creators  */
   extraReducers: (builder) => {
     builder.addCase(addCartItemAsync.pending, (state, action) => {
@@ -72,16 +91,7 @@ export const cartSlice = createSlice({
 
       state.status = "pendingAddItem" + action.meta.arg.productId; //Add here and go back to ProductCard.tsx
     }); //addCase Adds a case reducer to handle a single exact action type.
-    builder.addCase(addCartItemAsync.fulfilled, (state, action) => {
-      //second we set the status to what comes back in the action payload.
-      state.cart = action.payload;
-      state.status = "idle";
-    });
-    builder.addCase(addCartItemAsync.rejected, (state, action) => {
-      //finnaly we set the status back to idle if rejected.
-      console.log(action.payload);
-      state.status = "idle";
-    });
+
     builder.addCase(removeCartItemAsync.pending, (state, action) => {
       state.status =
         "pendingRemoveItem" + action.meta.arg.productId + action.meta.arg.name; //to target the specific button that's being clicked
@@ -102,9 +112,25 @@ export const cartSlice = createSlice({
       console.log(action.payload);
       state.status = "idle";
     });
+    builder.addMatcher(
+      isAnyOf(addCartItemAsync.fulfilled, fetchCartAsync.fulfilled),
+      (state, action) => {
+        //second we set the status to what comes back in the action payload.
+        state.cart = action.payload;
+        state.status = "idle";
+      }
+    );
+    builder.addMatcher(
+      isAnyOf(addCartItemAsync.rejected, fetchCartAsync.rejected),
+      (state, action) => {
+        //finnaly we set the status back to idle if rejected.
+        console.log(action.payload);
+        state.status = "idle";
+      }
+    );
   },
 });
 /*Export the actions and go to configureStore.tsx method */
-export const { setCart /* removeItem */ } = cartSlice.actions; //We remove removeItem cause we now use extrareducer
+export const { setCart, clearCart /* removeItem */ } = cartSlice.actions; //We remove removeItem cause we now use extrareducer
 
 //Now go to Product Details

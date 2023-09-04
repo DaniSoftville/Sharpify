@@ -3,6 +3,7 @@
 //import counterReducer from "../../features/contact/counterReducer";
 import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import { accountSlice } from "../../features/account/accountSlice";
 import { cartSlice } from "../../features/cart/cartSlice";
 import { catalogSlice } from "../../features/catalog/catalogSlice";
 import { counterSlice } from "../../features/contact/counterSlice";
@@ -18,6 +19,7 @@ export const store = configureStore({
     counter: counterSlice.reducer,
     cart: cartSlice.reducer, //once added, go and fetch the cart inside App.tsx
     catalog: catalogSlice.reducer,
+    account: accountSlice.reducer,
   },
 });
 
