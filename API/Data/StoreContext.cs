@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using API.Entities;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
+using API.Entities.OrderAggregate;
 
 namespace API.Data
 {
@@ -12,6 +13,8 @@ namespace API.Data
     }
     public DbSet<Product> Products { get; set; }
     public DbSet<Cart> Carts { get; set; }
+
+    public DbSet<Order> Orders { get; set; }
     protected override void OnModelCreating(ModelBuilder builder)
     {
       base.OnModelCreating(builder);
